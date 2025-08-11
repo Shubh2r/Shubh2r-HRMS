@@ -18,6 +18,37 @@
     <button onclick="login()">Login</button>
     <p id="error-msg"></p>
   </div>
-  <script src="js/script.js"></script>
+
+  <script>
+    // Initialize default HR if not already saved
+    if (!localStorage.getItem("users")) {
+      const defaultUsers = [
+        { role: "HR", username: "Shubham", password: "Shubh2r@4324" }
+      ];
+      localStorage.setItem("users", JSON.stringify(defaultUsers));
+    }
+
+    function login() {
+      const role = document.getElementById("role").value;
+      const username = document.getElementById("username").value;
+      const password = document.getElementById("password").value;
+      const errorMsg = document.getElementById("error-msg");
+
+      const users = JSON.parse(localStorage.getItem("users")) || [];
+      const user = users.find(u => u.role === role && u.username === username && u.password === password);
+
+      if (user) {
+        if (role === "HR") {
+          localStorage.setItem("loggedInHR", username);
+          window.location.href = "hr_dashboard.html";
+        } else {
+          localStorage.setItem("loggedInEmployee", username);
+          window.location.href = "employee_dashboard.html";
+        }
+      } else {
+        errorMsg.textContent = "Invalid credentials!";
+      }
+    }
+  </script>
 </body>
 </html>
