@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Employee Dashboard</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div class="login-container">
+    <h2>Welcome Employee</h2>
+    <button onclick="markAttendance()">Mark Attendance</button>
+    <h3>Your Attendance</h3>
+    <div id="myAttendance"></div>
+  </div>
+
+  <script>
+    const username = localStorage.getItem("employee");
+    const employees = [
+      { username: "emp001", password: "emp@123", attendance: [] }
+    ];
+
+    function markAttendance() {
+      const emp = employees.find(e => e.username === username);
+      const today = new Date().toISOString().split("T")[0];
+      if (!emp.attendance.includes(today)) {
+        emp.attendance.push(today);
+        alert("Attendance marked for " + today);
+      } else {
+        alert("Already marked for today.");
+      }
+      showMyAttendance();
+    }
+
+    function showMyAttendance() {
+      const emp = employees.find(e => e.username === username);
+      const container = document.getElementById("myAttendance");
+      container.innerHTML = emp.attendance.join("<br>") || "No attendance yet";
+    }
+
+    showMyAttendance();
+  </script>
+</body>
+</html>
