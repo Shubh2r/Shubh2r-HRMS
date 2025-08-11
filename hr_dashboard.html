@@ -2,12 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>HR Dashboard</title>
+  <title>Nautical Universe – HR Dashboard</title>
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
   <div class="login-container">
-    <h2>Welcome HR</h2>
+    <h2>Welcome HR – Nautical Universe</h2>
 
     <h3>Create Department</h3>
     <input type="text" id="departmentName" placeholder="Department Name" />
@@ -26,6 +26,7 @@
     <input type="text" id="empManager" placeholder="Reporting Manager" />
     <input type="text" id="empDesignation" placeholder="Designation" />
     <input type="text" id="empBloodGroup" placeholder="Blood Group" />
+    <input type="file" id="empPhoto" accept="image/*" />
     <input type="text" id="empUsername" placeholder="Login ID" />
     <input type="password" id="empPassword" placeholder="Password" />
     <button onclick="createEmployee()">Add Employee</button>
@@ -35,6 +36,11 @@
 
     <h3>Export Attendance</h3>
     <button onclick="exportAttendance()">Download CSV</button>
+
+    <h3>Change Password</h3>
+    <input type="password" id="oldPassword" placeholder="Old Password" />
+    <input type="password" id="newPassword" placeholder="New Password" />
+    <button onclick="changePassword()">Update Password</button>
 
     <h3>Logout</h3>
     <button onclick="logout()">Logout</button>
@@ -94,12 +100,27 @@
     }
 
     function createEmployee() {
-      const users = getUsers();
+      const photoInput = document.getElementById("empPhoto");
+      let photoData = "";
+      if (photoInput.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          photoData = e.target.result;
+          saveEmployee(photoData);
+        };
+        reader.readAsDataURL(photoInput.files[0]);
+      } else {
+        saveEmployee("");
+      }
+    }
 
+    function saveEmployee(photoData) {
+      const users = getUsers();
       const employee = {
         role: "Employee",
         username: document.getElementById("empUsername").value,
         password: document.getElementById("empPassword").value,
+        photo: photoData,
         profile: {
           name: document.getElementById("empName").value,
           id: document.getElementById("empID").value,
@@ -112,10 +133,10 @@
           department: document.getElementById("empDepartment").value,
           manager: document.getElementById("empManager").value,
           designation: document.getElementById("empDesignation").value,
-          bloodGroup: document.getElementById("empBloodGroup").value
+          bloodGroup: document.getElementById("empBloodGroup").value,
+          exit: null
         }
       };
-
       users.push(employee);
       saveUsers(users);
       alert("Employee added: " + employee.username);
@@ -131,22 +152,35 @@
         if (user.role === "Employee") {
           const records = attendance[user.username] || [];
           const div = document.createElement("div");
-          div.innerHTML = `<strong>${user.username}</strong>: ${records.join(", ") || "No attendance yet"}`;
+          div.innerHTML = `
+            <strong>${user.username}</strong>: ${records.join(", ") || "No attendance yet"}
+            <button onclick="markExit('${user.username}')">Mark Exit</button>
+          `;
           container.appendChild(div);
         }
       });
     }
 
+    function markExit(username) {
+      const users = getUsers();
+      const user = users.find(u => u.username === username);
+      const date = prompt("Exit Date (YYYY-MM-DD):");
+      const reason = prompt("Exit Reason:");
+      const interview = confirm("Was Exit Interview Done?");
+      const review = prompt("Final Review:");
+      user.profile.exit = { date, reason, interview, review };
+      saveUsers(users);
+      alert("Employee marked as exited.");
+    }
+
     function exportAttendance() {
       const attendance = getAttendance();
       let csv = "Username,Date\n";
-
       for (const user in attendance) {
         attendance[user].forEach(date => {
           csv += `${user},${date}\n`;
         });
       }
-
       const blob = new Blob([csv], { type: "text/csv" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -154,6 +188,20 @@
       a.download = "attendance.csv";
       a.click();
       URL.revokeObjectURL(url);
+    }
+
+    function changePassword() {
+      const oldPass = document.getElementById("oldPassword").value;
+      const newPass = document.getElementById("newPassword").value;
+      const users = getUsers();
+      const user = users.find(u => u.username === hrUser);
+      if (user.password === oldPass) {
+        user.password = newPass;
+        saveUsers(users);
+        alert("Password updated.");
+      } else {
+        alert("Old password incorrect.");
+      }
     }
 
     function logout() {
