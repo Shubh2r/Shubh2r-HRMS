@@ -14,27 +14,47 @@
   </div>
 
   <script>
-    const username = localStorage.getItem("employee");
-    const employees = [
-      { username: "emp001", password: "emp@123", attendance: [] }
-    ];
+    const username = localStorage.getItem("loggedInEmployee");
+
+    if (!username) {
+      alert("No employee logged in. Redirecting to login page.");
+      window.location.href = "index.html";
+    }
+
+    function getAttendance() {
+      return JSON.parse(localStorage.getItem("attendance")) || {};
+    }
+
+    function saveAttendance(attendance) {
+      localStorage.setItem("attendance", JSON.stringify(attendance));
+    }
 
     function markAttendance() {
-      const emp = employees.find(e => e.username === username);
       const today = new Date().toISOString().split("T")[0];
-      if (!emp.attendance.includes(today)) {
-        emp.attendance.push(today);
+      const attendance = getAttendance();
+
+      if (!attendance[username]) {
+        attendance[username] = [];
+      }
+
+      if (!attendance[username].includes(today)) {
+        attendance[username].push(today);
+        saveAttendance(attendance);
         alert("Attendance marked for " + today);
       } else {
         alert("Already marked for today.");
       }
+
       showMyAttendance();
     }
 
     function showMyAttendance() {
-      const emp = employees.find(e => e.username === username);
+      const attendance = getAttendance();
+      const records = attendance[username] || [];
       const container = document.getElementById("myAttendance");
-      container.innerHTML = emp.attendance.join("<br>") || "No attendance yet";
+      container.innerHTML = records.length
+        ? records.map(date => `<div>${date}</div>`).join("")
+        : "No attendance yet";
     }
 
     showMyAttendance();
