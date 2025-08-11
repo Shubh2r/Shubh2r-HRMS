@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>HR Dashboard</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div class="login-container">
+    <h2>Welcome HR</h2>
+
+    <h3>Create Department</h3>
+    <input type="text" id="departmentName" placeholder="Department Name" />
+    <button onclick="createDepartment()">Create</button>
+
+    <h3>Create Employee</h3>
+    <input type="text" id="empUsername" placeholder="Employee Username" />
+    <input type="password" id="empPassword" placeholder="Employee Password" />
+    <button onclick="createEmployee()">Add Employee</button>
+
+    <h3>All Attendance</h3>
+    <div id="attendanceList"></div>
+  </div>
+
+  <script>
+    const departments = [];
+    const employees = [
+      { username: "emp001", password: "emp@123", attendance: [] }
+    ];
+
+    function createDepartment() {
+      const name = document.getElementById("departmentName").value;
+      if (name) {
+        departments.push(name);
+        alert("Department created: " + name);
+      }
+    }
+
+    function createEmployee() {
+      const username = document.getElementById("empUsername").value;
+      const password = document.getElementById("empPassword").value;
+      if (username && password) {
+        employees.push({ username, password, attendance: [] });
+        alert("Employee added: " + username);
+      }
+    }
+
+    function showAttendance() {
+      const container = document.getElementById("attendanceList");
+      container.innerHTML = "";
+      employees.forEach(emp => {
+        const div = document.createElement("div");
+        div.innerHTML = `<strong>${emp.username}</strong>: ${emp.attendance.join(", ") || "No attendance yet"}`;
+        container.appendChild(div);
+      });
+    }
+
+    setInterval(showAttendance, 1000);
+  </script>
+</body>
+</html>
