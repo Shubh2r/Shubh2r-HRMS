@@ -14,8 +14,20 @@
     <button onclick="createDepartment()">Create</button>
 
     <h3>Create Employee</h3>
-    <input type="text" id="empUsername" placeholder="Employee Username" />
-    <input type="password" id="empPassword" placeholder="Employee Password" />
+    <input type="text" id="empName" placeholder="Employee Name" />
+    <input type="text" id="empID" placeholder="Employee ID" />
+    <input type="text" id="empPhone" placeholder="Phone Number" />
+    <input type="email" id="empEmail" placeholder="Email" />
+    <input type="text" id="empMarital" placeholder="Marital Status" />
+    <input type="text" id="empEducation" placeholder="Education" />
+    <input type="text" id="empExperience" placeholder="Past Experience" />
+    <input type="text" id="empAddress" placeholder="Address" />
+    <select id="empDepartment"></select>
+    <input type="text" id="empManager" placeholder="Reporting Manager" />
+    <input type="text" id="empDesignation" placeholder="Designation" />
+    <input type="text" id="empBloodGroup" placeholder="Blood Group" />
+    <input type="text" id="empUsername" placeholder="Login ID" />
+    <input type="password" id="empPassword" placeholder="Password" />
     <button onclick="createEmployee()">Add Employee</button>
 
     <h3>All Attendance</h3>
@@ -23,15 +35,16 @@
 
     <h3>Export Attendance</h3>
     <button onclick="exportAttendance()">Download CSV</button>
+
+    <h3>Logout</h3>
+    <button onclick="logout()">Logout</button>
   </div>
 
   <script>
-    // Initialize default HR if not already saved
-    if (!localStorage.getItem("users")) {
-      const defaultUsers = [
-        { role: "HR", username: "Shubham", password: "Shubh2r@4324" }
-      ];
-      localStorage.setItem("users", JSON.stringify(defaultUsers));
+    const hrUser = localStorage.getItem("loggedInHR");
+    if (!hrUser) {
+      alert("No HR logged in. Redirecting to login page.");
+      window.location.href = "index.html";
     }
 
     function getUsers() {
@@ -50,22 +63,62 @@
       localStorage.setItem("attendance", JSON.stringify(attendance));
     }
 
+    function getDepartments() {
+      return JSON.parse(localStorage.getItem("departments")) || [];
+    }
+
+    function saveDepartments(depts) {
+      localStorage.setItem("departments", JSON.stringify(depts));
+    }
+
     function createDepartment() {
       const name = document.getElementById("departmentName").value;
-      alert("Department created: " + name);
-      // You can expand this later to store departments
+      if (name) {
+        const depts = getDepartments();
+        depts.push(name);
+        saveDepartments(depts);
+        alert("Department created: " + name);
+        populateDepartments();
+      }
+    }
+
+    function populateDepartments() {
+      const select = document.getElementById("empDepartment");
+      select.innerHTML = "";
+      getDepartments().forEach(dept => {
+        const option = document.createElement("option");
+        option.value = dept;
+        option.textContent = dept;
+        select.appendChild(option);
+      });
     }
 
     function createEmployee() {
-      const username = document.getElementById("empUsername").value;
-      const password = document.getElementById("empPassword").value;
       const users = getUsers();
 
-      if (username && password) {
-        users.push({ role: "Employee", username, password });
-        saveUsers(users);
-        alert("Employee added: " + username);
-      }
+      const employee = {
+        role: "Employee",
+        username: document.getElementById("empUsername").value,
+        password: document.getElementById("empPassword").value,
+        profile: {
+          name: document.getElementById("empName").value,
+          id: document.getElementById("empID").value,
+          phone: document.getElementById("empPhone").value,
+          email: document.getElementById("empEmail").value,
+          marital: document.getElementById("empMarital").value,
+          education: document.getElementById("empEducation").value,
+          experience: document.getElementById("empExperience").value,
+          address: document.getElementById("empAddress").value,
+          department: document.getElementById("empDepartment").value,
+          manager: document.getElementById("empManager").value,
+          designation: document.getElementById("empDesignation").value,
+          bloodGroup: document.getElementById("empBloodGroup").value
+        }
+      };
+
+      users.push(employee);
+      saveUsers(users);
+      alert("Employee added: " + employee.username);
     }
 
     function showAttendance() {
@@ -78,52 +131,10 @@
         if (user.role === "Employee") {
           const records = attendance[user.username] || [];
           const div = document.createElement("div");
-          div.innerHTML = `
-            <strong>${user.username}</strong>: ${records.join(", ") || "No attendance yet"}
-            <button onclick="editUser('${user.username}')">Edit</button>
-            <button onclick="deleteUser('${user.username}')">Delete</button>
-          `;
+          div.innerHTML = `<strong>${user.username}</strong>: ${records.join(", ") || "No attendance yet"}`;
           container.appendChild(div);
         }
       });
-    }
-
-    function editUser(username) {
-      const users = getUsers();
-      const user = users.find(u => u.username === username);
-      const newUsername = prompt("New username:", user.username);
-      const newPassword = prompt("New password:", user.password);
-
-      if (newUsername && newPassword) {
-        user.username = newUsername;
-        user.password = newPassword;
-        saveUsers(users);
-
-        const attendance = getAttendance();
-        if (attendance[username]) {
-          attendance[newUsername] = attendance[username];
-          delete attendance[username];
-          saveAttendance(attendance);
-        }
-
-        alert("User updated.");
-        showAttendance();
-      }
-    }
-
-    function deleteUser(username) {
-      if (confirm(`Are you sure you want to delete ${username}?`)) {
-        let users = getUsers();
-        users = users.filter(u => u.username !== username);
-        saveUsers(users);
-
-        const attendance = getAttendance();
-        delete attendance[username];
-        saveAttendance(attendance);
-
-        alert("User deleted.");
-        showAttendance();
-      }
     }
 
     function exportAttendance() {
@@ -145,6 +156,12 @@
       URL.revokeObjectURL(url);
     }
 
+    function logout() {
+      localStorage.removeItem("loggedInHR");
+      window.location.href = "index.html";
+    }
+
+    populateDepartments();
     setInterval(showAttendance, 1000);
   </script>
 </body>
