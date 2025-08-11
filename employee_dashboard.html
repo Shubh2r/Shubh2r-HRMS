@@ -2,12 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Employee Dashboard</title>
+  <title>Nautical Universe – Employee Dashboard</title>
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
   <div class="login-container">
-    <h2>Welcome Employee</h2>
+    <h2>Welcome Employee – Nautical Universe</h2>
     <button onclick="markAttendance()">Mark Attendance</button>
 
     <h3>Your Attendance</h3>
@@ -15,6 +15,11 @@
 
     <h3>Your Profile</h3>
     <div id="myProfile"></div>
+
+    <h3>Change Password</h3>
+    <input type="password" id="oldPassword" placeholder="Old Password" />
+    <input type="password" id="newPassword" placeholder="New Password" />
+    <button onclick="changePassword()">Update Password</button>
 
     <h3>Logout</h3>
     <button onclick="logout()">Logout</button>
@@ -28,60 +33,4 @@
     }
 
     function getAttendance() {
-      return JSON.parse(localStorage.getItem("attendance")) || {};
-    }
-
-    function saveAttendance(attendance) {
-      localStorage.setItem("attendance", JSON.stringify(attendance));
-    }
-
-    function getUsers() {
-      return JSON.parse(localStorage.getItem("users")) || [];
-    }
-
-    function markAttendance() {
-      const today = new Date().toISOString().split("T")[0];
-      const attendance = getAttendance();
-
-      if (!attendance[username]) {
-        attendance[username] = [];
-      }
-
-      if (!attendance[username].includes(today)) {
-        attendance[username].push(today);
-        saveAttendance(attendance);
-        alert("Attendance marked for " + today);
-      } else {
-        alert("Already marked for today.");
-      }
-
-      showMyAttendance();
-    }
-
-    function showMyAttendance() {
-      const attendance = getAttendance();
-      const records = attendance[username] || [];
-      const container = document.getElementById("myAttendance");
-      container.innerHTML = records.length
-        ? records.map(date => `<div>${date}</div>`).join("")
-        : "No attendance yet";
-    }
-
-    function showMyProfile() {
-      const users = getUsers();
-      const user = users.find(u => u.username === username);
-      const profile = user?.profile;
-
-      const container = document.getElementById("myProfile");
-      if (profile) {
-        container.innerHTML = `
-          <p><strong>Name:</strong> ${profile.name}</p>
-          <p><strong>Employee ID:</strong> ${profile.id}</p>
-          <p><strong>Phone:</strong> ${profile.phone}</p>
-          <p><strong>Email:</strong> ${profile.email}</p>
-          <p><strong>Marital Status:</strong> ${profile.marital}</p>
-          <p><strong>Education:</strong> ${profile.education}</p>
-          <p><strong>Experience:</strong> ${profile.experience}</p>
-          <p><strong>Address:</strong> ${profile.address}</p>
-          <p><strong>Department:</strong> ${profile.department}</p>
-          <p><strong>Reporting Manager
+      return JSON.parse(localStorage.get
