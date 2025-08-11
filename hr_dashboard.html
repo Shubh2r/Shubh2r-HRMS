@@ -20,39 +20,129 @@
 
     <h3>All Attendance</h3>
     <div id="attendanceList"></div>
+
+    <h3>Export Attendance</h3>
+    <button onclick="exportAttendance()">Download CSV</button>
   </div>
 
   <script>
-    const departments = [];
-    const employees = [
-      { username: "emp001", password: "emp@123", attendance: [] }
-    ];
+    // Initialize default HR if not already saved
+    if (!localStorage.getItem("users")) {
+      const defaultUsers = [
+        { role: "HR", username: "Shubham", password: "Shubh2r@4324" }
+      ];
+      localStorage.setItem("users", JSON.stringify(defaultUsers));
+    }
+
+    function getUsers() {
+      return JSON.parse(localStorage.getItem("users")) || [];
+    }
+
+    function saveUsers(users) {
+      localStorage.setItem("users", JSON.stringify(users));
+    }
+
+    function getAttendance() {
+      return JSON.parse(localStorage.getItem("attendance")) || {};
+    }
+
+    function saveAttendance(attendance) {
+      localStorage.setItem("attendance", JSON.stringify(attendance));
+    }
 
     function createDepartment() {
       const name = document.getElementById("departmentName").value;
-      if (name) {
-        departments.push(name);
-        alert("Department created: " + name);
-      }
+      alert("Department created: " + name);
+      // You can expand this later to store departments
     }
 
     function createEmployee() {
       const username = document.getElementById("empUsername").value;
       const password = document.getElementById("empPassword").value;
+      const users = getUsers();
+
       if (username && password) {
-        employees.push({ username, password, attendance: [] });
+        users.push({ role: "Employee", username, password });
+        saveUsers(users);
         alert("Employee added: " + username);
       }
     }
 
     function showAttendance() {
+      const attendance = getAttendance();
       const container = document.getElementById("attendanceList");
       container.innerHTML = "";
-      employees.forEach(emp => {
-        const div = document.createElement("div");
-        div.innerHTML = `<strong>${emp.username}</strong>: ${emp.attendance.join(", ") || "No attendance yet"}`;
-        container.appendChild(div);
+
+      const users = getUsers();
+      users.forEach(user => {
+        if (user.role === "Employee") {
+          const records = attendance[user.username] || [];
+          const div = document.createElement("div");
+          div.innerHTML = `
+            <strong>${user.username}</strong>: ${records.join(", ") || "No attendance yet"}
+            <button onclick="editUser('${user.username}')">Edit</button>
+            <button onclick="deleteUser('${user.username}')">Delete</button>
+          `;
+          container.appendChild(div);
+        }
       });
+    }
+
+    function editUser(username) {
+      const users = getUsers();
+      const user = users.find(u => u.username === username);
+      const newUsername = prompt("New username:", user.username);
+      const newPassword = prompt("New password:", user.password);
+
+      if (newUsername && newPassword) {
+        user.username = newUsername;
+        user.password = newPassword;
+        saveUsers(users);
+
+        const attendance = getAttendance();
+        if (attendance[username]) {
+          attendance[newUsername] = attendance[username];
+          delete attendance[username];
+          saveAttendance(attendance);
+        }
+
+        alert("User updated.");
+        showAttendance();
+      }
+    }
+
+    function deleteUser(username) {
+      if (confirm(`Are you sure you want to delete ${username}?`)) {
+        let users = getUsers();
+        users = users.filter(u => u.username !== username);
+        saveUsers(users);
+
+        const attendance = getAttendance();
+        delete attendance[username];
+        saveAttendance(attendance);
+
+        alert("User deleted.");
+        showAttendance();
+      }
+    }
+
+    function exportAttendance() {
+      const attendance = getAttendance();
+      let csv = "Username,Date\n";
+
+      for (const user in attendance) {
+        attendance[user].forEach(date => {
+          csv += `${user},${date}\n`;
+        });
+      }
+
+      const blob = new Blob([csv], { type: "text/csv" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "attendance.csv";
+      a.click();
+      URL.revokeObjectURL(url);
     }
 
     setInterval(showAttendance, 1000);
