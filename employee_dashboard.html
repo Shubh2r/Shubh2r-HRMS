@@ -9,13 +9,19 @@
   <div class="login-container">
     <h2>Welcome Employee</h2>
     <button onclick="markAttendance()">Mark Attendance</button>
+
     <h3>Your Attendance</h3>
     <div id="myAttendance"></div>
+
+    <h3>Your Profile</h3>
+    <div id="myProfile"></div>
+
+    <h3>Logout</h3>
+    <button onclick="logout()">Logout</button>
   </div>
 
   <script>
     const username = localStorage.getItem("loggedInEmployee");
-
     if (!username) {
       alert("No employee logged in. Redirecting to login page.");
       window.location.href = "index.html";
@@ -27,6 +33,10 @@
 
     function saveAttendance(attendance) {
       localStorage.setItem("attendance", JSON.stringify(attendance));
+    }
+
+    function getUsers() {
+      return JSON.parse(localStorage.getItem("users")) || [];
     }
 
     function markAttendance() {
@@ -57,7 +67,21 @@
         : "No attendance yet";
     }
 
-    showMyAttendance();
-  </script>
-</body>
-</html>
+    function showMyProfile() {
+      const users = getUsers();
+      const user = users.find(u => u.username === username);
+      const profile = user?.profile;
+
+      const container = document.getElementById("myProfile");
+      if (profile) {
+        container.innerHTML = `
+          <p><strong>Name:</strong> ${profile.name}</p>
+          <p><strong>Employee ID:</strong> ${profile.id}</p>
+          <p><strong>Phone:</strong> ${profile.phone}</p>
+          <p><strong>Email:</strong> ${profile.email}</p>
+          <p><strong>Marital Status:</strong> ${profile.marital}</p>
+          <p><strong>Education:</strong> ${profile.education}</p>
+          <p><strong>Experience:</strong> ${profile.experience}</p>
+          <p><strong>Address:</strong> ${profile.address}</p>
+          <p><strong>Department:</strong> ${profile.department}</p>
+          <p><strong>Reporting Manager
